@@ -14,14 +14,16 @@ def loadPC(path):
     zOffset = inFile.header.offset[2]
 
     global dataset
-    dataset = np.vstack([inFile.X, inFile.Y, inFile.Z, inFile.Classification]).transpose()
+
+    dataset = np.vstack([inFile.x, inFile.y, inFile.z, inFile.Classification]).transpose()
     dataset[:,0] = dataset[:,0] * scale + xOffset
     dataset[:,1] = dataset[:,1] * scale + yOffset
     dataset[:,2] = dataset[:,2] * scale + zOffset
 
+
     #dataset = inFile.points
 
-def getPoints(polygon, pointClass):
+def getPoints(polygon, pointClass, type):
 
     poly = shapely.wkt.loads(polygon)
     x, y = poly.exterior.coords.xy
@@ -36,15 +38,29 @@ def getPoints(polygon, pointClass):
     smallDataset = smallDataset[smallDataset[:,3] == pointClass]
     pointsInPoly = []
 
+    numberVertices=0
     for elem in vertices:
         pointsInPoly.append(elem)
+        numberVertices = numberVertices + 1
 
+    heights = []
     for i in range(0, smallDataset.shape[0]):
         p = Point(smallDataset[i][0], smallDataset[i][1])
         if p.within(poly):
             pointsInPoly.append([smallDataset[i][0], smallDataset[i][1], smallDataset[i][2]])
+            heights.append(smallDataset[i][2])
 
-    return(pointsInPoly)
+    if type == "min":
+        bHeight = np.amin(heights, axis=0)
+    elif type == "max":
+        bHeight = np.amax(heights, axis=0)
+    elif type == "median":
+        bHeight = np.median(heights, axis=0)
+
+    for i in range(numberVertices):
+        pointsInPoly[i].append(bHeight)
+
+    return(pointsInPoly, numberVertices)
 
 
 def getHeight(array, pointClass, type):

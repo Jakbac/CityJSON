@@ -46,6 +46,34 @@ def getOverlapMatrix(geomArray1, geomArray2):
 
     return(myIntersectArray)
 
+def getTriangles(pointList, numberVertices):
+
+    vertices=pointList
+    for row in vertices:
+        del row[2]
+
+    segments = []
+    for i in range(numberVertices -1):
+        segments.append([i, i + 1])
+    segments.append([numberVertices-1, 0])
+
+    input = dict(vertices=vertices, segments=segments)
+    tri = tr.triangulate(input, 'p') #-- 'p' is important to respect the segments
+
+    print(tri)
+
+    ax = plt.axes()
+    print("number of triangles:", len(tri['triangles']))
+    print(tri['triangles'])
+    tr.plot(ax, **tri)
+    plt.show()
+
+    #np.put(indexes, indexes, pointList)
+
+    print(indexes)
+    a/0
+
+"""
 def getTriangles(polystring):
 
     poly = shapely.wkt.loads(polystring)
@@ -71,7 +99,7 @@ def getTriangles(polystring):
         triangles.append(triline)
 
     return(triangles)
-
+"""
 def create3DPoly(polygon, height, type):
     poly = shapely.wkt.loads(polygon)
     vertices = []

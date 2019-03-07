@@ -22,9 +22,16 @@ dataATA = translateArray(transDict, dataATA)
 dataATA[:,-1] = np.ma.apply_along_axis(getVertices, 1, dataATA)
 print("BGT: AuxiliaryTrafficArea loaded")
 pointsATA = []
+ATABPs = []
 for i in range(dataATA.shape[0]):
-    pointsATA.append(getPoints(dataATA[i][-1], 2))
+    pointsList, numberVertices = getPoints(dataATA[i][-1], 2, "median")
+    pointsATA.append(pointsList)
+    ATABPs.append(numberVertices)
     break
+
+triangleATA = []
+for i in range(dataATA.shape[0]):
+    getTriangles(pointsATA[i], ATABPs[i])
 
 print(pointsATA)
 a/0
