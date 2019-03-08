@@ -2,6 +2,7 @@ from shapely.geometry import Point, Polygon
 import shapely.wkt
 import numpy as np
 from laspy.file import File
+import matplotlib.pyplot as plt
 
 dataset = None
 
@@ -29,6 +30,18 @@ def loadPC(path):
 def getPoints(polygon, pointClass, type):
 
     poly = shapely.wkt.loads(polygon)
+
+    """
+    x, y = poly.exterior.xy
+
+    fig = plt.figure(1, figsize=(5,5), dpi=90)
+    ax = fig.add_subplot(111)
+    ax.plot(x, y)
+    ax.set_title('Polygon Edges')
+
+    plt.show()
+    """
+
     x, y = poly.exterior.coords.xy
     vertices = np.column_stack((x, y))
     vertices = vertices[:-1, :]
@@ -53,8 +66,8 @@ def getPoints(polygon, pointClass, type):
     for i in range(0, smallDataset.shape[0]):
         p = Point(smallDataset[i][0], smallDataset[i][1])
         if p.within(poly):
-            pointsInPoly.append([smallDataset[i][0], smallDataset[i][1], 1])
-            heights.append(smallDataset[i][2])
+            pointsInPoly.append([smallDataset[i][0], smallDataset[i][1], smallDataset[i][2]])
+            heights.append(2)
 
     if type == "min":
         bHeight = np.amin(heights, axis=0)

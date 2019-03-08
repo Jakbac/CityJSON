@@ -39,6 +39,7 @@ def write_header():
 
     geometryTemplates = {}
     data['geometry-templates'] = geometryTemplates
+    print("JSON Header written")
 
 def write_cityObject(type, attributes, geomType, lod, boundaries, vertices, D3="Flat"):
     global cityObjects
@@ -46,7 +47,7 @@ def write_cityObject(type, attributes, geomType, lod, boundaries, vertices, D3="
     global allVertices
 
     dictObj = {}
-    cityObjects["id-" + str(objectCounter)] = dictObj
+    cityObjects["id_" + str(type) + "_" + str(objectCounter)] = dictObj
 
     dictObj["type"] = type
 
@@ -59,18 +60,20 @@ def write_cityObject(type, attributes, geomType, lod, boundaries, vertices, D3="
     geomdict['lod'] = lod
 
 
-    print("LEN " + str(len(allVertices)))
     if D3=="Flat":
         boundaries = np.array(boundaries)
         boundaries = boundaries + len(allVertices)
         boundaries = boundaries.reshape(-1, 3).tolist()
+        for i, elem in enumerate(boundaries):
+            boundaries[i] = [elem]
     elif D3== "3D":
         for i, elem in enumerate(boundaries):
             for j, _elem in enumerate(elem):
                 boundaries[i][j] = _elem + len(allVertices)
             boundaries[i] = [elem]
+        boundaries = [boundaries]
 
-    geomdict['boundaries'] = [boundaries]
+    geomdict['boundaries'] = boundaries
 
     geometry.append(geomdict)
     dictObj["geometry"] = geometry
@@ -79,7 +82,6 @@ def write_cityObject(type, attributes, geomType, lod, boundaries, vertices, D3="
     for elem in vertices:
         allVertices.append(elem)
         counter = counter + 1
-    print("COUNTER " + str(counter))
 
     objectCounter = objectCounter + 1
 
@@ -121,9 +123,20 @@ def write_cityObject_old(dArr, attributes, lod, type, geoType, verticeCs, bounda
 
     objectCounter = objectCounter + 1
 
+def refresh_json():
+    global data
+    global cityObjects
+    global objectCounter
+    global vertices
+    data.clear()
+    cityObjects.clear()
+    objectCounter = 1
+    del allVertices[:]
 
-def create_json():
+    print("JSON refreshed")
+
+def create_json(string):
     global data
     data["vertices"] = allVertices
-    with open('data.json', 'w') as outfile:
+    with open(string, 'w') as outfile:
         json.dump(data, outfile, indent = 4)

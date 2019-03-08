@@ -4,7 +4,7 @@ import shapely.geometry as sg
 from shapely.wkb import dumps, loads
 #from shapely.ops import triangulate
 
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import triangle as tr
 import copy
 
@@ -53,12 +53,21 @@ def getTriangles(pointlist, numberVertBound):
         del row[2]
 
     segments = []
-    for i in range(numberVertBound):
+    for i in range(numberVertBound - 1):
         segments.append([i, i + 1])
     segments.append([numberVertBound-1, 0])
 
     input = dict(vertices=vertices, segments=segments)
     tri = tr.triangulate(input, 'p') #-- 'p' is important to respect the segments
+
+    """
+    ax = plt.axes()
+
+    print("number of triangles:", len(tri['triangles']))
+    print(tri['triangles'])
+    tr.plot(ax, **tri)
+    plt.show()
+    """
 
     indexes = tri["triangles"].flatten()
 
