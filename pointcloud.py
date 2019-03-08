@@ -6,6 +6,8 @@ from laspy.file import File
 dataset = None
 
 def loadPC(path):
+    global dataset
+
     inFile = File(path, mode='r')
 
     scale = inFile.header.scale[0]
@@ -13,21 +15,25 @@ def loadPC(path):
     yOffset = inFile.header.offset[1]
     zOffset = inFile.header.offset[2]
 
-    global dataset
 
     dataset = np.vstack([inFile.x, inFile.y, inFile.z, inFile.Classification]).transpose()
+    """
     dataset[:,0] = dataset[:,0] * scale + xOffset
     dataset[:,1] = dataset[:,1] * scale + yOffset
     dataset[:,2] = dataset[:,2] * scale + zOffset
+    """
 
-
+    dataset = np.around(dataset, decimals=3)
     #dataset = inFile.points
 
 def getPoints(polygon, pointClass, type):
 
     poly = shapely.wkt.loads(polygon)
     x, y = poly.exterior.coords.xy
-    vertices = np.column_stack((x, y)).tolist()
+    vertices = np.column_stack((x, y))
+    vertices = vertices[:-1, :]
+
+    vertices = np.around(vertices, decimals=3).tolist()
 
     smallDataset = np.copy(dataset)
 
@@ -39,7 +45,7 @@ def getPoints(polygon, pointClass, type):
     pointsInPoly = []
 
     numberVertices=0
-    for elem in vertices:
+    for i, elem in enumerate(vertices):
         pointsInPoly.append(elem)
         numberVertices = numberVertices + 1
 
@@ -47,7 +53,7 @@ def getPoints(polygon, pointClass, type):
     for i in range(0, smallDataset.shape[0]):
         p = Point(smallDataset[i][0], smallDataset[i][1])
         if p.within(poly):
-            pointsInPoly.append([smallDataset[i][0], smallDataset[i][1], smallDataset[i][2]])
+            pointsInPoly.append([smallDataset[i][0], smallDataset[i][1], 1])
             heights.append(smallDataset[i][2])
 
     if type == "min":
@@ -62,10 +68,8 @@ def getPoints(polygon, pointClass, type):
 
     return(pointsInPoly, numberVertices)
 
+def getHeight(polygon, pointClass, type):
 
-def getHeight(array, pointClass, type):
-
-    polygon = array[-1]
     poly = shapely.wkt.loads(polygon)
 
     smallDataset = np.copy(dataset)
@@ -93,7 +97,7 @@ def getHeight(array, pointClass, type):
 
     return returner
 
-def addHeight(pString, pointClass, type):
+"""def addHeight(pString, pointClass, type):
     pString = np.array(pString)
     poly = Polygon(pString[:,:2])
     smallDataset = np.copy(dataset)
@@ -136,3 +140,4 @@ def addHeight(pString, pointClass, type):
     a/0
 
     return pString
+"""
