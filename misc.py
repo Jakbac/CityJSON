@@ -8,9 +8,12 @@ import matplotlib.pyplot as plt
 import triangle as tr
 import copy
 
-def translateArray(transDict, myArr):
-    for i in range(myArr.shape[0]):
-        myArr[i][0] = str(myArr[i][0]).split('T')[0]
+def translateArray(transDict, myArr, time="yes"):
+    if time=="yes":
+        for i in range(myArr.shape[0]):
+            date = myArr[i][0]
+            date = date.split("T")[0]
+            myArr[i][0] = date
     for key, value in transDict.items():
         myArr[myArr == key] = value
     return(myArr)

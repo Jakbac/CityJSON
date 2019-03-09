@@ -15,7 +15,7 @@ print("CSV: Translation loaded")
 loadPC("input/clipped.las")
 print("AHN: Pointcloud loaded")
 
-"""
+
 ################################################################################
 #AuxiliaryTrafficArea --- WORKS
 ################################################################################
@@ -56,7 +56,7 @@ for i in range(dataATA.shape[0]):
         if counter == myCounter:
             break
 
-type="AuxiliaryTrafficArea"
+type="Road"
 attributes= ["creationDate", "class", "surfaceMaterial"]
 geomType = "MultiSurface"
 lod = 1
@@ -77,7 +77,6 @@ create_json("ATA.json")
 
 refresh_json()
 write_header()
-
 
 ################################################################################
 #BridgeConstructionElement
@@ -100,6 +99,10 @@ for i in range(dataBCE.shape[0]):
     BPs.append(numberVertices)
     print("polygon " + str(counter) + " of " + str(dataBCE.shape[0]) + ": points read")
     counter = counter + 1
+    if counter != None:
+        if counter == myCounter:
+            break
+
 
 #ATAwkt = []
 vertices = []
@@ -112,8 +115,11 @@ for i in range(dataBCE.shape[0]):
     indexes.append(Tindexes)
     print("polygon " + str(counter) + " of " + str(dataBCE.shape[0]) + ": triangulated")
     counter = counter + 1
+    if counter != None:
+        if counter == myCounter:
+            break
 
-type="BridgeConstructionElement"
+type="Bridge"
 attributes= ["creationDate"]
 geomType = "MultiSurface"
 lod = 1
@@ -126,6 +132,9 @@ for i in range(dataBCE.shape[0]):
     write_cityObject(type, attrdict, geomType, lod, indexes[i], vertices[i])
     print("polygon " + str(counter) + " of " + str(dataBCE.shape[0]) + ": written to JSON")
     counter = counter + 1
+    if counter != None:
+        if counter == myCounter:
+            break
 
 create_json("BCE.json")
 refresh_json()
@@ -148,7 +157,7 @@ connB2 = sqlite3.connect("input/BAG/bag_pand.sqlite")
 columnsB2 = ["bouwjaar", "gebruiksdoel", "geometry"]
 tableB2 = "pand"
 dataB2 = getColumns(connB2, tableB2, columnsB2, time="no")
-dataB2 = translateArray(transDict, dataB2)
+dataB2 = translateArray(transDict, dataB2, time="no")
 dataB2[:,-1] = np.ma.apply_along_axis(getVertices, 1, dataB2)
 print("BAG: Pand loaded")
 
@@ -195,6 +204,9 @@ for i in range(dataB.shape[0]):
 
     print("polygon " + str(counter) + " of " + str(dataB.shape[0]) + ": 3D model created")
     counter = counter + 1
+    if counter != None:
+        if counter == myCounter:
+            break
 
 type="Building"
 attributes= ["creationDate", "yearOfConstruction", "class", "storeysAboveGround"]
@@ -215,6 +227,9 @@ for i in range(dataB.shape[0]):
     write_cityObject(type, attrdict, geomType, lod, indexes[i], vertices[i], D3 = "3D")
     print("polygon " + str(counter) + " of " + str(dataB.shape[0]) + ": written to JSON")
     counter = counter + 1
+    if counter != None:
+        if counter == myCounter:
+            break
 
 create_json("building.json")
 
@@ -564,7 +579,7 @@ for i in range(dataTC.shape[0]):
         if counter == myCounter:
             break
 
-type="TrafficArea"
+type="Road"
 attributes= ["creationDate", "class", "surfaceMaterial"]
 geomType = "MultiSurface"
 lod = 1
@@ -583,9 +598,10 @@ for i in range(dataTC.shape[0]):
 
 create_json("TA.json")
 
+
 refresh_json()
 write_header()
-"""
+
 
 ################################################################################
 #WaterBody
@@ -597,8 +613,6 @@ dataWB = getColumns(connWB, tableWB, columnsWB)
 dataWB = translateArray(transDict, dataWB)
 dataWB[:,-1] = np.ma.apply_along_axis(getVertices, 1, dataWB)
 print("BGT: Waterdeel loaded")
-
-print("TODO: fixed height!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 vertices = []

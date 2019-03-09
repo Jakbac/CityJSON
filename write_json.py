@@ -16,19 +16,9 @@ def write_header():
     data['type'] = 'CityJSON'
     data['version'] = '0.9'
 
-    extensions = {}
-    data['extensions'] = extensions
-
     metadata = {}
     metadata['referenceSystem'] = "urn:ogc:def:crs:EPSG::" + str(EPSG) + ""
     data['metadata'] = metadata
-
-    """
-    transform = {}
-    transform["scale"] = []
-    transform["translate"] = []
-    data['transform'] = transform
-    """
 
     data["CityObjects"] = cityObjects
 
@@ -52,8 +42,6 @@ def write_cityObject(type, attributes, geomType, lod, boundaries, vertices, D3="
     cityObjects["id_" + str(type) + "_" + str(objectCounter)] = dictObj
 
     dictObj["type"] = type
-
-    dictObj["attributes"] = attributes
 
     geometry = []
     geomdict = {}
@@ -83,6 +71,15 @@ def write_cityObject(type, attributes, geomType, lod, boundaries, vertices, D3="
 
     geometry.append(geomdict)
     dictObj["geometry"] = geometry
+
+    semantics = {}
+    surfaces = []
+    surfdict = attributes
+    surfaces.append(surfdict)
+    semantics["surfaces"] = surfaces
+    semantics["values"] = []
+    dictObj["semantics"] = semantics
+
 
     counter = 0
     for elem in vertices:
@@ -145,4 +142,4 @@ def create_json(filename):
     global data
     data["vertices"] = allVertices
     with open("output/" + filename, 'w') as outfile:
-        json.dump(data, outfile, indent = 4)
+        json.dump(data, outfile, indent=2)
