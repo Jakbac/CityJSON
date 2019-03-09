@@ -9,9 +9,12 @@ import triangle as tr
 import copy
 
 def translateArray(transDict, myArr):
+    for i in range(myArr.shape[0]):
+        myArr[i][0] = str(myArr[i][0]).split('T')[0]
     for key, value in transDict.items():
         myArr[myArr == key] = value
     return(myArr)
+
 
 def getVertices(myArr):
     geomString=myArr[-1]

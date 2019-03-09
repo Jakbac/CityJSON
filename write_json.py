@@ -34,11 +34,13 @@ def write_header():
 
     data["vertices"] = allVertices
 
+    """
     appearance = {}
     data['appearance'] = appearance
 
     geometryTemplates = {}
     data['geometry-templates'] = geometryTemplates
+    """
     print("JSON Header written")
 
 def write_cityObject(type, attributes, geomType, lod, boundaries, vertices, D3="Flat"):
@@ -72,6 +74,10 @@ def write_cityObject(type, attributes, geomType, lod, boundaries, vertices, D3="
                 boundaries[i][j] = _elem + len(allVertices)
             boundaries[i] = [elem]
         boundaries = [boundaries]
+    elif D3== "water":
+        for i, elem in enumerate(boundaries):
+            boundaries[i] = elem + len(allVertices)
+        boundaries = [[boundaries]]
 
     geomdict['boundaries'] = boundaries
 
@@ -135,8 +141,8 @@ def refresh_json():
 
     print("JSON refreshed")
 
-def create_json(string):
+def create_json(filename):
     global data
     data["vertices"] = allVertices
-    with open(string, 'w') as outfile:
+    with open("output/" + filename, 'w') as outfile:
         json.dump(data, outfile, indent = 4)

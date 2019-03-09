@@ -3,7 +3,7 @@ import shapely.wkt
 import numpy as np
 from laspy.file import File
 import matplotlib.pyplot as plt
-
+import math
 dataset = None
 
 def loadPC(path):
@@ -24,10 +24,10 @@ def loadPC(path):
     dataset[:,2] = dataset[:,2] * scale + zOffset
     """
 
-    dataset = np.around(dataset, decimals=3)
+    dataset = np.around(dataset, decimals=5)
     #dataset = inFile.points
 
-def getPoints(polygon, pointClass, type):
+def getPoints(polygon, pointClass, type, invHeight):
 
     poly = shapely.wkt.loads(polygon)
 
@@ -46,7 +46,7 @@ def getPoints(polygon, pointClass, type):
     vertices = np.column_stack((x, y))
     vertices = vertices[:-1, :]
 
-    vertices = np.around(vertices, decimals=3).tolist()
+    vertices = np.around(vertices, decimals=5).tolist()
 
     smallDataset = np.copy(dataset)
 
@@ -54,7 +54,16 @@ def getPoints(polygon, pointClass, type):
     smallDataset = smallDataset[smallDataset[:,0] < poly.bounds[2]]
     smallDataset = smallDataset[smallDataset[:,1] > poly.bounds[1]]
     smallDataset = smallDataset[smallDataset[:,1] < poly.bounds[3]]
-    smallDataset = smallDataset[smallDataset[:,3] == pointClass]
+    if len(pointClass) == 1:
+        smallDataset = smallDataset[smallDataset[:,3] == pointClass[0]]
+    elif len(pointClass) == 2:
+        smallDataset = smallDataset[(smallDataset[:,3] == pointClass[0]) |
+        (smallDataset[:,3] == pointClass[1])]
+    elif len(pointClass) == 3:
+        smallDataset = smallDataset[smallDataset[:,3] == pointClass[0] |
+        (smallDataset[:,3] == pointClass[1]) |
+        (smallDataset[:,3] == pointClass[2])]
+
     pointsInPoly = []
 
     numberVertices=0
@@ -67,7 +76,10 @@ def getPoints(polygon, pointClass, type):
         p = Point(smallDataset[i][0], smallDataset[i][1])
         if p.within(poly):
             pointsInPoly.append([smallDataset[i][0], smallDataset[i][1], smallDataset[i][2]])
-            heights.append(2)
+            heights.append(smallDataset[i][2])
+
+    if len(heights) == 0:
+        type="invalid"
 
     if type == "min":
         bHeight = np.amin(heights, axis=0)
@@ -75,6 +87,9 @@ def getPoints(polygon, pointClass, type):
         bHeight = np.amax(heights, axis=0)
     elif type == "median":
         bHeight = np.median(heights, axis=0)
+    elif type == "invalid":
+        print("no points inside polygon")
+        bHeight = invHeight
 
     for i in range(numberVertices):
         pointsInPoly[i].append(bHeight)
@@ -94,12 +109,17 @@ def getHeight(polygon, pointClass, type):
     smallDataset = smallDataset[smallDataset[:,3] == pointClass]
     pointsInPoly = []
 
+
     for i in range(0, smallDataset.shape[0]):
         p = Point(smallDataset[i][0], smallDataset[i][1])
         if p.within(poly):
             pointsInPoly.append(i)
 
+
     heights = smallDataset[pointsInPoly][:,2]
+
+    if (len(pointsInPoly) == 0):
+        return "invalid"
 
     if type == "min":
         returner = np.amin(heights, axis=0)

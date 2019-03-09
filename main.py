@@ -4,7 +4,7 @@ from pointcloud import *
 from misc import *
 from write_json import *
 
-myCounter=None
+myCounter=2
 
 write_header()
 
@@ -15,8 +15,9 @@ print("CSV: Translation loaded")
 loadPC("input/clipped.las")
 print("AHN: Pointcloud loaded")
 
+"""
 ################################################################################
-#AuxiliaryTrafficArea
+#AuxiliaryTrafficArea --- WORKS
 ################################################################################
 connATA = sqlite3.connect("input/BGT/bgt_auxiliarytrafficarea.sqlite")
 columnsATA = ["tijdstipregistratie", "bgt_functie", "bgt_fysiekvoorkomen", "relatievehoogteligging", "geometry"] #can be that relatievehoogteligging is useless as we derive height from pointcloud
@@ -31,7 +32,7 @@ BPs = []
 
 counter = 1
 for i in range(dataATA.shape[0]):
-    pointsList, numberVertices = getPoints(dataATA[i][-1], 2, "median")
+    pointsList, numberVertices = getPoints(dataATA[i][-1], [2], "median", 1)
     points.append(pointsList)
     BPs.append(numberVertices)
     print("polygon " + str(counter) + " of " + str(dataATA.shape[0]) + ": points read")
@@ -73,6 +74,7 @@ for i in range(dataATA.shape[0]):
             break
 
 create_json("ATA.json")
+
 refresh_json()
 write_header()
 
@@ -93,7 +95,7 @@ BPs = []
 
 counter = 1
 for i in range(dataBCE.shape[0]):
-    pointsList, numberVertices = getPoints(dataBCE[i][-1], 2, "median")
+    pointsList, numberVertices = getPoints(dataBCE[i][-1], [2], "median", 1)
     points.append(pointsList)
     BPs.append(numberVertices)
     print("polygon " + str(counter) + " of " + str(dataBCE.shape[0]) + ": points read")
@@ -128,6 +130,7 @@ for i in range(dataBCE.shape[0]):
 create_json("BCE.json")
 refresh_json()
 write_header()
+
 
 ################################################################################
 #Building 1
@@ -173,13 +176,21 @@ storeys = []
 counter = 1
 for i in range(dataB.shape[0]):
     height = getHeight(dataB[i][-1], 6, "median")
-    Tvertices, Tindexes = get3DModel(dataB[i][-1], height)
+
+    if height =="invalid":
+        print("polygon " + str(counter) + " of " + str(dataB.shape[0]) + ": no AHN points")
+        Tvertices = 0
+        Tindexes = 0
+        storey = 0
+    else:
+        Tvertices, Tindexes = get3DModel(dataB[i][-1], height)
+        storey = height // 3.0
+        if storey < 1:
+            storey = 1
+
     vertices.append(Tvertices)
     indexes.append(Tindexes)
 
-    storey = height // 4.0
-    if storey == 0:
-        storey = 1
     storeys.append(storey)
 
     print("polygon " + str(counter) + " of " + str(dataB.shape[0]) + ": 3D model created")
@@ -192,6 +203,9 @@ lod = 1
 
 counter = 1
 for i in range(dataB.shape[0]):
+    if vertices[i] == 0:
+        counter = counter + 1
+        continue
     attrdict = {}
     for j, elem in enumerate(attributes):
         if j == 3:
@@ -201,10 +215,10 @@ for i in range(dataB.shape[0]):
     write_cityObject(type, attrdict, geomType, lod, indexes[i], vertices[i], D3 = "3D")
     print("polygon " + str(counter) + " of " + str(dataB.shape[0]) + ": written to JSON")
     counter = counter + 1
-    if counter == 30:
-        break
 
 create_json("building.json")
+
+
 refresh_json()
 write_header()
 
@@ -225,7 +239,7 @@ BPs = []
 
 counter = 1
 for i in range(dataLU.shape[0]):
-    pointsList, numberVertices = getPoints(dataLU[i][-1], 2, "median")
+    pointsList, numberVertices = getPoints(dataLU[i][-1], [1], "median", 1)
     points.append(pointsList)
     BPs.append(numberVertices)
     print("polygon " + str(counter) + " of " + str(dataLU.shape[0]) + ": points read")
@@ -267,6 +281,7 @@ for i in range(dataLU.shape[0]):
             break
 
 create_json("LU.json")
+
 refresh_json()
 write_header()
 
@@ -288,7 +303,7 @@ BPs = []
 
 counter = 1
 for i in range(dataPC1.shape[0]):
-    pointsList, numberVertices = getPoints(dataPC1[i][-1], 2, "median")
+    pointsList, numberVertices = getPoints(dataPC1[i][-1], [2], "median", 1)
     points.append(pointsList)
     BPs.append(numberVertices)
     print("polygon " + str(counter) + " of " + str(dataPC1.shape[0]) + ": points read")
@@ -345,7 +360,7 @@ BPs = []
 
 counter = 1
 for i in range(dataPC2.shape[0]):
-    pointsList, numberVertices = getPoints(dataPC2[i][-1], 2, "median")
+    pointsList, numberVertices = getPoints(dataPC2[i][-1], [2], "median", 1)
     points.append(pointsList)
     BPs.append(numberVertices)
     print("polygon " + str(counter) + " of " + str(dataPC2.shape[0]) + ": points read")
@@ -406,7 +421,7 @@ BPs = []
 
 counter = 1
 for i in range(dataGCO1.shape[0]):
-    pointsList, numberVertices = getPoints(dataGCO1[i][-1], 2, "median")
+    pointsList, numberVertices = getPoints(dataGCO1[i][-1], [2], "median", 1)
     points.append(pointsList)
     BPs.append(numberVertices)
     print("polygon " + str(counter) + " of " + str(dataGCO1.shape[0]) + ": points read")
@@ -463,7 +478,7 @@ BPs = []
 
 counter = 1
 for i in range(dataGCO2.shape[0]):
-    pointsList, numberVertices = getPoints(dataGCO2[i][-1], 2, "median")
+    pointsList, numberVertices = getPoints(dataGCO2[i][-1], [2], "median", 1)
     points.append(pointsList)
     BPs.append(numberVertices)
     print("polygon " + str(counter) + " of " + str(dataGCO2.shape[0]) + ": points read")
@@ -505,12 +520,12 @@ for i in range(dataGCO2.shape[0]):
             break
 
 create_json("GCO.json")
+
 refresh_json()
 write_header()
 
-
 ################################################################################
-#TrafficArea1
+#TrafficArea
 ################################################################################
 connTC = sqlite3.connect("input/BGT/bgt_trafficarea.sqlite")
 columnsTC = ["tijdstipregistratie", "bgt_functie", "bgt_fysiekvoorkomen", "geometry"]
@@ -525,7 +540,7 @@ BPs = []
 
 counter = 1
 for i in range(dataTC.shape[0]):
-    pointsList, numberVertices = getPoints(dataTC[i][-1], 2, "median")
+    pointsList, numberVertices = getPoints(dataTC[i][-1], [2], "median", 1)
     points.append(pointsList)
     BPs.append(numberVertices)
     print("polygon " + str(counter) + " of " + str(dataTC.shape[0]) + ": points read")
@@ -567,8 +582,10 @@ for i in range(dataTC.shape[0]):
             break
 
 create_json("TA.json")
+
 refresh_json()
 write_header()
+"""
 
 ################################################################################
 #WaterBody
@@ -583,30 +600,35 @@ print("BGT: Waterdeel loaded")
 
 print("TODO: fixed height!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-points = []
-BPs = []
 
-counter = 1
-for i in range(dataWB.shape[0]):
-    pointsList, numberVertices = getPoints(dataWB[i][-1], 9, "median")
-    points.append(pointsList)
-    BPs.append(numberVertices)
-    print("polygon " + str(counter) + " of " + str(dataWB.shape[0]) + ": points read")
-    counter = counter + 1
-    if counter != None:
-        if counter == myCounter:
-            break
-
-#ATAwkt = []
 vertices = []
 indexes = []
 
 counter = 1
 for i in range(dataWB.shape[0]):
-    Tvertices, Tindexes = getTriangles(points[i], BPs[i])
-    vertices.append(Tvertices)
-    indexes.append(Tindexes)
-    print("polygon " + str(counter) + " of " + str(dataWB.shape[0]) + ": triangulated")
+    height = getHeight(dataWB[i][-1], [9], "min")
+    if height =="invalid":
+        height = -0.7
+
+    poly = shapely.wkt.loads(dataWB[i][-1])
+    x, y = poly.exterior.coords.xy
+    vertice = np.column_stack((x, y))
+    vertice = vertice[:-1, :].tolist()
+
+    numberVertices = 0
+    for j in range(len(vertice)):
+        vertice[j].append(height)
+        numberVertices = numberVertices + 1
+    vertices.append(vertice)
+
+    segments=[]
+    for j in range(numberVertices):
+        segments.append(j)
+    indexes.append(segments)
+
+    print("polygon " + str(counter) + " of " + str(dataWB.shape[0]) + ": points read")
+
+
     counter = counter + 1
     if counter != None:
         if counter == myCounter:
@@ -622,7 +644,7 @@ for i in range(dataWB.shape[0]):
     attrdict = {}
     for j, elem in enumerate(attributes):
         attrdict[elem] = dataWB[i,j]
-    write_cityObject(type, attrdict, geomType, lod, indexes[i], vertices[i])
+    write_cityObject(type, attrdict, geomType, lod, indexes[i], vertices[i], D3="water")
     print("polygon " + str(counter) + " of " + str(dataWB.shape[0]) + ": written to JSON")
     counter = counter + 1
     if counter != None:
@@ -630,4 +652,5 @@ for i in range(dataWB.shape[0]):
             break
 
 create_json("WB.json")
+
 refresh_json()
